@@ -1,0 +1,26 @@
+{
+  "name":"akbarali1/jpg-to-pdf",
+  "type":"project",
+  "license":"MIT",
+  "autoload":{
+    "psr-4":{
+      "App\\":"src/"
+    }
+  },
+  "authors":[
+    {
+      "name":"Akbarali",
+      "email":"me@akbarali.uz"
+    }
+  ],
+  "require":{
+    "illuminate/database": "^9.52",
+    "php":"^8.0",
+    "ext-pdo":"*",
+    "ext-curl":"*",
+    "ext-json":"*"
+  },
+  "require-dev":{
+    "roave/security-advisories":"dev-latest"
+  }
+}
