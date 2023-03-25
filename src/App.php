@@ -31,14 +31,22 @@ class App
 
     public function run()
     {
-      match ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
+
+        $res = match ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
+            'jpgToPdf' => $this->routeService->jpgToPdf(),
             default => $this->routeService->home(),
         };
+        header('Content-Type: application/json');
+        try {
+            echo json_encode($res, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } catch (\JsonException $e) {
+            dd($e->getMessage());
+        }
 
         //header json
-      /*  header('Content-Type: application/json');
+        /*  header('Content-Type: application/json');
 
-        echo json_decode($response);*/
+          echo json_decode($response);*/
         /*  switch ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
               default:
                   $this->routeService->home();

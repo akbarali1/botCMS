@@ -19,10 +19,21 @@ use GuzzleHttp\Exception\GuzzleException;
 class CoreService
 {
     protected mixed $api_key;
+    public array    $request = [];
 
+    /**
+     * @throws \JsonException
+     */
     public function __construct()
     {
         $this->api_key = config('telegram')['botToken'];
+        $data          = file_get_contents('php://input');
+        if ($data) {
+            $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        }
+        if (!isset($this->request['message']['chat']['id'])) {
+            dd('Error: Chat ID not found');
+        }
     }
 
     public function sendTelegram($array, $sending = 'sendMessage')
@@ -81,7 +92,7 @@ class CoreService
                 'disable_notification' => $disable_notification,
                 'reply_to_message_id'  => $reply_to_message_id,
                 'reply_markup'         => $reply_markup,
-                'protect_content'      => true,
+                'protect_content'      => false,
             ]
         );
     }
@@ -112,36 +123,68 @@ class CoreService
         );
     }
 
-    public function sendChatAction(int $chat_id, string $action = 'typing'): array
+    public function sendChatAction(int $chat_id = 0, string $action = 'typing'): array
     {
         return $this->sendTelegram(
             [
-                'chat_id' => $chat_id,
+                'chat_id' => $chat_id === 0 ? $this->getChatId() : $chat_id,
                 'action'  => $action,
             ],
             'sendChatAction'
         );
     }
 
-    public function getChatId(array $array)
+    public function getChatId()
     {
+        $array = $this->request;
+
         return $array['message']['chat']['id'] ?? null;
     }
 
-    public function getMessageId(array $array)
+    public function getChatType()
     {
+        $array = $this->request;
+
+        return $array['message']['chat']['type'] ?? null;
+    }
+
+    //fullName
+    public function getFullName(): string
+    {
+        $array      = $this->request;
+        $last_name  = $array['message']['from']['last_name'] ?? '';
+        $first_name = $array['message']['from']['first_name'] ?? '';
+
+        return $first_name.' '.$last_name;
+    }
+
+    public function getMessageId()
+    {
+        $array = $this->request;
+
         return $array['message']['message_id'] ?? null;
     }
 
-    public function getMessage(array $array)
+    public function getMessage()
     {
+        $array = $this->request;
+
         return $array['message']['text'] ?? 414229140;
     }
 
 
-    public function getForwardFromDate(array $array): int
+    public function getForwardFromDate(): int
     {
+        $array = $this->request;
+
         return (int)$array['message']['forward_date'];
+    }
+
+    public static function getLanguageCode(): string
+    {
+        $array = (new self())->request;
+
+        return $array['message']['from']['language_code'] ?? 'uz';
     }
 
 }

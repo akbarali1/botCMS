@@ -19,6 +19,14 @@ class RouteService
 
     public function home()
     {
+        return [
+            'status'  => 'success',
+            'message' => 'Hello World',
+        ];
+    }
+
+    public function jpgToPdf()
+    {
         return (new ConnectService())->connect();
     }
 }

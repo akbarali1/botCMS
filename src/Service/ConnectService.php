@@ -17,9 +17,32 @@ class ConnectService extends CoreService
 {
     public function connect(): array
     {
-        return $this->sendTelegram([
-            'chat_id' => config('telegram')['chatId'],
-            'text'    => 'Hello World',
-        ]);
+        $this->sendChatAction();
+        if (config('telegram')['debug'] && !in_array($this->getChatId(), config('telegram')['adminIds'], true)) {
+            return $this->sendMessage($this->getChatId(), 'The bot is currently not working because the admin is adding new things to the bot. Try again later');
+        }
+
+        return match ($this->getMessage()) {
+            '/start'             => $this->start(),
+            '/iWillSendTheFiles' => $this->iWillSendTheFiles(),
+            'stopSendMeTheFile'  => $this->stopSendMeTheFile(),
+            default              => $this->default()
+        };
     }
+
+    private function default(): array
+    {
+        return $this->sendMessage($this->getChatId(), 'Please send me a photo');
+    }
+
+    private function start(): array
+    {
+        return $this->sendMessage($this->getChatId(), lang("start", $this->getFullName()));
+    }
+
+    private function iWillSendTheFiles(): array
+    {
+        return $this->sendMessage($this->getChatId(), lang("iWillSendTheFiles"));
+    }
+
 }
