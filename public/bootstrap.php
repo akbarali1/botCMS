@@ -3,7 +3,7 @@ require __DIR__.'/../vendor/autoload.php';
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-$config  = require __DIR__.'/../public/config.php';
+$config  = config('db');
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => $config['driver'] ?? 'mysql',

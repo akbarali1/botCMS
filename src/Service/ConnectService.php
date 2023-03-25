@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-
 /**
  * Created by PhpStorm.
  * Filename: RouteService.php
@@ -14,11 +13,13 @@ namespace App\Service;
  * Telegram: @akbar_aka
  * E-mail: me@akbarali.uz
  */
-class RouteService
+class ConnectService extends CoreService
 {
-
-    public function home()
+    public function connect(): array
     {
-        return (new ConnectService())->connect();
+        return $this->sendTelegram([
+            'chat_id' => config('telegram')['chatId'],
+            'text'    => 'Hello World',
+        ]);
     }
 }

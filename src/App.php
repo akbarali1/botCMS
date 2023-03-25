@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Service\IntendService;
 use App\Service\RouteService;
 
 /**
@@ -30,16 +29,21 @@ class App
         return array_filter(explode('/', preg_replace('/'.($which_argument ? '(\&|)'.$which_argument.'(\=(.*?)((?=&(?!amp\;))|$)|(.*?)\b)' : '(\?.*)').'/i', '', $url)))[1] ?? '';
     }
 
-    public function run(): void
+    public function run()
     {
-        match ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
+      match ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
             default => $this->routeService->home(),
         };
-      /*  switch ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
-            default:
-                $this->routeService->home();
-                break;
-        }*/
+
+        //header json
+      /*  header('Content-Type: application/json');
+
+        echo json_decode($response);*/
+        /*  switch ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
+              default:
+                  $this->routeService->home();
+                  break;
+          }*/
     }
 
 }
