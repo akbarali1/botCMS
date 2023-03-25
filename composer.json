@@ -18,7 +18,8 @@
     "php":"^8.0",
     "ext-pdo":"*",
     "ext-curl":"*",
-    "ext-json":"*"
+    "ext-json":"*",
+    "symfony/var-dumper": "^6.2"
   },
   "require-dev":{
     "roave/security-advisories":"dev-latest"
