@@ -20,9 +20,9 @@ class ConnectService extends CoreService
 {
     public function connect(): array
     {
-        if ($banCHeck = $this->removeJoinChannel()) {
-            return $banCHeck;
-        }
+        /* if ($banCHeck = $this->removeJoinChannel()) {
+             return $banCHeck;
+         }*/
         $user = $this->getUser();
         if ($user->is_ban) {
             return $this->sendMessage($this->getChatId(), lang("banned"));
@@ -213,38 +213,40 @@ class ConnectService extends CoreService
     {
         $request = $this->request;
         //        info(json_encode($request, JSON_THROW_ON_ERROR));
-        $fromId = $request['message']['from']['id'];
-        $user   = $this->getUser();
+        $fromId = $this->getChatId();
+        $chatId = $request['message']['chat']['id'];
+        if (!$fromId) {
+            return false;
+        }
+        $user = $this->getUser();
 
         if (!empty($data['message']['left_chat_member'])) {
-            self::deleteMessage($this->getChatId(), $this->getMessageId());
+            self::deleteMessage($chatId, $this->getMessageId());
             if ($user->is_ban) {
                 return $this->sendMessage($fromId, lang("youAreBannedAndLeft"));
             }
-            //user banned
             $user->is_ban = 1;
             $user->save();
 
-            $this->restrictChatMember($this->getChatId(), $fromId, 60 * 60 * 24 * 365, false);
+            $this->restrictChatMember($chatId, $fromId, 60 * 60 * 24 * 365, false);
 
             return $this->sendMessage($fromId, lang("youAreBanned"));
         }
 
         if (!empty($data['message']['new_chat_member'])) {
             if ($user->is_ban) {
-                $this->restrictChatMember($this->getChatId(), $fromId, 60 * 60 * 24 * 365, false);
+                $this->restrictChatMember($chatId, $fromId, 60 * 60 * 24 * 365, false);
 
                 return $this->sendMessage($fromId, lang("youAreBannedAndLeft"));
             }
-            self::deleteMessage($this->getChatId(), $this->getMessageId());
+            self::deleteMessage($chatId, $this->getMessageId());
         }
 
         if ($user->is_ban) {
-            $this->restrictChatMember($this->getChatId(), $user->telegram_id, 60 * 60 * 24 * 365, false);
+            $this->restrictChatMember($chatId, $user->telegram_id, 60 * 60 * 24 * 365, false);
 
             return $this->sendMessage($fromId, lang("banned"));
         }
-
 
         return false;
     }
