@@ -1,6 +1,22 @@
 <?php
 return [
-    'start'               => 'Salom %s. Men JPG rasmni PDF qilish sizga tashlash uchun @kbarali tomonidan yozildim. Menga rasm tashlashdan oldin /boshla buyrug`ini bering. Keyin JPG rasmni PHOTO qilish tashlang (file qilib emas)!',
+    "adminGroupSend" => "Rasmni PDFga o`tkazishdi. Bot hozirda pullik rejimda ishlamayotganligi sababli hammaga hujjatlarini PDF qilib bermoqda. Men bir nusxasini shu yerga tashlayman.\nFull Name: %s \nUsername: @%s \nUserID: <code>%s</code> \nMen faylni generatsiya qila boshladim. \n \n#jpgtopdf",
+
+    'start'                  => "Salom %s. Men JPG rasmni PDF ga o'girib beraman. Rasmni Tashlashdan oldin /iWillSendTheFiles buyrug'ini bering va menga rasm larni yuboring (rasmlarni fayl sifatida yubormang)!",
+    'photoSave'              => "Bu rasmni saqlab qoldim. Hamma rasmlarni PDF qilib jo'natishim uchun /stopSendMeTheFile buyrug'ini bering.",
+    'iWillSendTheFiles'      => "Menga rasmlaringizni yuboring, men ularni xotiramda saqlayman. Barcha rasmlaringizni yuklashni tugatganingizdan so'ng menga /stopSendMeTheFile buyrug'ini yuboring",
+    'iWillSendTheFilesError' => "Siz allaqachon menga bu buyrug'ini bergansiz. Meni chalg'itmay rasmlaringizni tashlang. Agar siz menga yuborgan rasmlaringizni PDF qilmoqchi bo`lsangiz /stopSendMeTheFile buyrug'ini bering",
+    'toRememberError'        => "Ma'lumotlar bazasi bilan aloqa yo'q. Admin bilan bog'laning",
+    "jptToPdfConvertPending" => "Menga yuborgan rasmlaringizni pdf ga aylantira boshladim. Bu biroz vaqt oladi. Kuting...",
+    "noFileSend"             => "Men siz yuborgan rasmlaringizni eslay olmadim. Iltimos, rasmlarni yuboring",
+    "photoSaveError"         => "Siz hali menga /iWillSendTheFiles buyrug'ini bermadingiz. Avval menga /iWillSendTheFiles buyrug'ini bering va keyin PDF-ga aylantirmoqchi bo'lgan rasmlaringizni yuboring.",
+    'channelJoinError'       => "Botdan foydalanishdan oldin ushbu kanallarga obuna bo'lishingiz kerak.",
+    "joinedGroup"            => "Guruhga qo'shilganingiz bilan tabriklaymiz. Guruhimizni tark etsangiz, sizni abadiy blokirovka qilaman. Shuning uchun guruhdan chiqmang va guruhda har xil ahmoqona gaplarni yozmang",
+    'youAreBanned'           => "<b>Seni Abadiy blokladim. Keyngi safar Rasmlaringni PDF qilmoqchi bo'lsang boshqa joyda qil. Men senga oldindan aytgan edim guruhimizdan chiqma deb sen mening ishimga nisbatan hurmatsizlik qilding.</b>",
+    'banned'                 => "<b>Men senga oldindan aytgan edim guruhimizdan chiqma deb sen mening ishimga nisbatan hurmatsizlik qilding. Men Seni bloklaganman</b>",
+
+    "youAreBannedAndLeft" => "Hadeb guruhimizga kirib chiqavermay boshqa joydan Rasmlaringizni PDF qil. Aytdimku senga endi men senga boshqa hizmat qilmayman.",
+
     'boshla'              => 'Siz umuman menga bu buyruqni bermagan ekansiz 😁 men xotiramni maksimal ishlatishni boshladim. Tezroq menga rasmlarni tashlang men xotiramga saqlab olaman va tugatganigizdan so`ng menga /toxta ni jo`nating',
     'boshla2'             => 'Siz ilgari menga shunday buyruq bergansiz. Qayta buyruq berib chalkashtirmasdan iloji boricha tezroq rasmlarimni tashlang',
     'toxtaerror'          => 'Rasm tashlashni to`xtaring. Rasmni mewnga tashlashdan oldin menga /boshla buyrug`ini berishingiz kerak. Yo`qsa men rasmlarni hotiramga saqlay olmayman. Menga hozir /boshla buyrug`ini bering',

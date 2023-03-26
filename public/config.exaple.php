@@ -14,7 +14,16 @@ return [
         'strict'    => true,
     ],
     'telegram' => [
-        'botToken' => 'botToken',
-        'adminIds'  => [],
+        'botToken'         => 'botToken',
+        'adminIds'         => [],
+        'requiredChannels' => [
+            ['id' => 0, 'name' => 'channel or group name'],
+        ],
+        'adminGroupId'     => 'adminGroupId',
+        'features'         => [
+            'convert' => true,
+            'delete'  => true,
+        ],
+        'debug'            => true,
     ],
 ];

@@ -5,7 +5,7 @@ use App\Service\CoreService;
 if (!function_exists('info')) {
     function info($message, $context = [])
     {
-        $path = __DIR__.'/../public/logs/';
+        $path = __DIR__.'/../public/storage/logs/';
         if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
         }

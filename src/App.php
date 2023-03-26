@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Service\RouteService;
+use JetBrains\PhpStorm\NoReturn;
 
 /**
  * Created by PhpStorm.
@@ -29,12 +30,15 @@ class App
         return array_filter(explode('/', preg_replace('/'.($which_argument ? '(\&|)'.$which_argument.'(\=(.*?)((?=&(?!amp\;))|$)|(.*?)\b)' : '(\?.*)').'/i', '', $url)))[1] ?? '';
     }
 
-    public function run()
+    #[NoReturn] public function run(): void
     {
-
-        $res = match ($this->removeGetRequest($_SERVER['REQUEST_URI'])) {
-            'jpgToPdf' => $this->routeService->jpgToPdf(),
-            default => $this->routeService->home(),
+        if (pathinfo($_SERVER['REQUEST_URI'], PATHINFO_DIRNAME) === '/storage/pdf') {
+            $this->routeService->storage();
+        }
+        $res = match (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) {
+            '/jpgToPdf' => $this->routeService->jpgToPdf(),
+            '/jpgToPdf/test' => $this->routeService->jpgToPdfTest(),
+            default     => $this->routeService->home(),
         };
         header('Content-Type: application/json');
         try {

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Models\UserModel;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -19,28 +20,52 @@ use GuzzleHttp\Exception\GuzzleException;
 class CoreService
 {
     protected mixed $api_key;
-    public array    $request = [];
+    protected int   $adminGroupId     = 0;
+    public array    $request          = [];
+    public array    $requiredChannels = [];
+    public          $user             = [];
 
     /**
      * @throws \JsonException
      */
     public function __construct()
     {
-        $this->api_key = config('telegram')['botToken'];
-        $data          = file_get_contents('php://input');
+        $this->api_key          = config('telegram')['botToken'];
+        $this->adminGroupId     = config('telegram')['adminGroupId'];
+        $this->requiredChannels = config('telegram')['requiredChannels'];
+        $data                   = file_get_contents('php://input');
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
-        if (!isset($this->request['message']['chat']['id'])) {
-            dd('Error: Chat ID not found');
-        }
+        /*  if (!isset($this->request['message']['chat']['id'])) {
+              dd('Error: Chat ID not found');
+          }*/
     }
 
-    public function sendTelegram($array, $sending = 'sendMessage')
+    /**
+     * @throws \JsonException
+     */
+    public function sendTelegram($array, $method = 'sendMessage'): array
     {
+        $ch = curl_init('https://api.telegram.org/bot'.$this->api_key.'/'.$method);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $array);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        $res = curl_exec($ch);
+        curl_close($ch);
+
+        $array = (array)json_decode($res, true, 512, JSON_THROW_ON_ERROR);
+        if ($array['ok'] === false) {
+            info($array['description']);
+        }
+
+        return $array;
+
+
         try {
             $response = (new Client(['base_uri' => 'https://api.telegram.org/bot'.$this->api_key.'/']))->post(
-                $sending,
+                $method,
                 [
                     'query' => $array,
                 ]
@@ -137,8 +162,15 @@ class CoreService
     public function getChatId()
     {
         $array = $this->request;
+        if (isset($array['callback_query']['message']['chat']['id'])) {
+            return $array['callback_query']['message']['chat']['id'];
+        }
 
-        return $array['message']['chat']['id'] ?? null;
+        if (isset($array['message']['from']['id'])) {
+            return $array['message']['from']['id'];
+        }
+
+        return $array['message']['chat']['id'] ?? 6210123963;
     }
 
     public function getChatType()
@@ -167,9 +199,14 @@ class CoreService
 
     public function getMessage()
     {
-        $array = $this->request;
+        $request = $this->request;
 
-        return $array['message']['text'] ?? 414229140;
+        $photo = isset($request['message']['photo']) ? 'photo' : false;
+        if ($photo) {
+            return $photo;
+        }
+
+        return $request['message']['text'] ?? null;
     }
 
 
@@ -186,5 +223,77 @@ class CoreService
 
         return $array['message']['from']['language_code'] ?? 'uz';
     }
+
+    public function checkPhoto(): string|bool
+    {
+        $request = $this->request;
+
+        return isset($request['message']['photo']) ? 'photo' : false;
+    }
+
+    public function getUsername()
+    {
+        $request = $this->request;
+
+        return $request['message']['from']['username'] ?? 'nousername';
+    }
+
+    public function sendDocument($chat_id, $document, $caption = null, $parse_mode = null, $disable_notification = false, $reply_to_message_id = null, $reply_markup = null): array
+    {
+        //        info($document);
+        //        info(curl_file_create($document));
+
+        return $this->sendTelegram(
+            [
+                'chat_id'              => $chat_id,
+                'document'             => $document,
+                'caption'              => $caption,
+                'parse_mode'           => $parse_mode,
+                'disable_notification' => $disable_notification,
+                'reply_to_message_id'  => $reply_to_message_id,
+                'reply_markup'         => $reply_markup,
+            ],
+            'sendDocument'
+        );
+    }
+
+    public function getChatMember(mixed $channel, int $userId)
+    {
+        return $this->sendTelegram(
+            [
+                'chat_id' => $channel,
+                'user_id' => $userId,
+            ],
+            'getChatMember'
+        );
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function restrictChatMember(int $chat_id, int $userId, int $until_date, $can_send_messages = true): array
+    {
+        info('restrictChatMember');
+        info($chat_id);
+        info($userId);
+
+        return $this->sendTelegram(
+            [
+                'chat_id'         => $chat_id,
+                'user_id'         => $userId,
+                'until_date'      => $until_date,
+                'chatPermissions' => [
+                    'can_send_messages' => $can_send_messages,
+                ],
+            ],
+            'restrictChatMember'
+        );
+    }
+
+    public function isPrivateChat(): bool
+    {
+        return $this->getChatType() === 'private';
+    }
+
 
 }
