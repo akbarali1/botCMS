@@ -20,7 +20,7 @@ class ConnectService extends CoreService
 {
     public function connect(): array
     {
-        /* if ($banCHeck = $this->removeJoinChannel()) {
+        /*if ($banCHeck = $this->removeJoinChannel()) {
              return $banCHeck;
          }*/
         $user = $this->getUser();
@@ -106,7 +106,7 @@ class ConnectService extends CoreService
 
     public function getUser(): UserModel
     {
-        if (count($this->user) > 0) {
+        if (is_array($this->user) && count($this->user) > 0) {
             return $this->user;
         }
 

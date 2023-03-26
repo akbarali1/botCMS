@@ -12,6 +12,13 @@ require __DIR__.'/../public/bootstrap.php';
 const PUBLIC_PATH = __DIR__;
 try {
     (new App())->run();
-} catch (Throwable $e) {
-    dd($e->getMessage(), $e->getLine(), $e->getFile(), $e->getTraceAsString());
+} catch (Throwable|Exception $e) {
+    $coreService = new \App\Service\CoreService();
+    if (in_array($coreService->getChatId(), config('telegram')['adminIds'], true)) {
+        $res = $coreService->sendMessage($coreService->getChatId(), '<code>'.json_encode([$e->getMessage(), $e->getTraceAsString(), ...$e->getTrace()], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT).'</code>', ['parse_mode' => 'HTML']);
+    }
+    //header json
+    header('Content-Type: application/json');
+    http_response_code(200);
+    echo json_encode($res ?? ['status' => 'error', 'message' => $e->getMessage()]);
 }
