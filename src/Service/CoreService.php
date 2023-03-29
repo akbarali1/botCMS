@@ -37,6 +37,7 @@ class CoreService
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
+        info(json_encode($this->request));
         /*  if (!isset($this->request['message']['chat']['id'])) {
               dd('Error: Chat ID not found');
           }*/

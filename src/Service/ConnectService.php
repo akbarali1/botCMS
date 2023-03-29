@@ -20,9 +20,6 @@ class ConnectService extends CoreService
 {
     public function connect(): array
     {
-        /*if ($banCHeck = $this->removeJoinChannel()) {
-             return $banCHeck;
-         }*/
         $user = $this->getUser();
         if ($user->is_ban) {
             return $this->sendMessage($this->getChatId(), lang("banned"));
@@ -45,13 +42,15 @@ class ConnectService extends CoreService
             return $this->sendMessage($this->getChatId(), $message);
         }
 
-        return match ($this->getMessage()) {
+        $res = match ($this->getMessage()) {
             '/start'             => $this->start(),
             '/iWillSendTheFiles' => $this->iWillSendTheFiles(),
             'photo'              => $this->photoSave(),
             '/stopSendMeTheFile' => $this->stopSendMeTheFile(),
             default              => $this->default()
         };
+
+        return $res;
     }
 
     private function default(): array

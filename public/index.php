@@ -1,10 +1,11 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 0);
-error_reporting(E_ALL & ~E_NOTICE);
-date_default_timezone_set('Asia/Tashkent');
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 0);
+//error_reporting(E_ALL & ~E_NOTICE);
+//date_default_timezone_set('Asia/Tashkent');
 
 use App\App;
+use App\Service\CoreService;
 
 session_start();
 require __DIR__.'/../vendor/autoload.php';
@@ -13,7 +14,7 @@ const PUBLIC_PATH = __DIR__;
 try {
     (new App())->run();
 } catch (Throwable|Exception $e) {
-    $coreService = new \App\Service\CoreService();
+    $coreService = new CoreService();
     if (in_array($coreService->getChatId(), config('telegram')['adminIds'], true)) {
         $res = $coreService->sendMessage($coreService->getChatId(), '<code>'.json_encode([$e->getMessage(), $e->getTraceAsString(), ...$e->getTrace()], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT).'</code>', ['parse_mode' => 'HTML']);
     }
