@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Models\UserModel;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -23,7 +22,9 @@ class CoreService
     protected int   $adminGroupId     = 0;
     public array    $request          = [];
     public array    $requiredChannels = [];
+    public array    $adminIds         = [];
     public          $user             = [];
+    public string   $messageQuery     = '';
 
     /**
      * @throws \JsonException
@@ -32,8 +33,10 @@ class CoreService
     {
         $this->api_key          = config('telegram')['botToken'];
         $this->adminGroupId     = config('telegram')['adminGroupId'];
+        $this->adminIds         = config('telegram')['adminIds'];
         $this->requiredChannels = config('telegram')['requiredChannels'];
         $data                   = file_get_contents('php://input');
+        $this->messageQuery     = '';
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
@@ -163,15 +166,8 @@ class CoreService
     public function getChatId()
     {
         $array = $this->request;
-        if (isset($array['callback_query']['message']['chat']['id'])) {
-            return $array['callback_query']['message']['chat']['id'];
-        }
 
-        if (isset($array['message']['from']['id'])) {
-            return $array['message']['from']['id'];
-        }
-
-        return $array['message']['chat']['id'] ?? 6210123963;
+        return $array['callback_query']['message']['chat']['id'] ?? $array['message']['from']['id'] ?? $array['message']['chat']['id'] ?? 6210123963;
     }
 
     public function getChatType()
@@ -206,8 +202,17 @@ class CoreService
         if ($photo) {
             return $photo;
         }
+        $text = $request['message']['text'] ?? null;
 
-        return $request['message']['text'] ?? null;
+        //check admin
+        if ($this->getChatType() === 'private' && str_contains($text, '-') && in_array($this->getChatId(), $this->adminIds, true)) {
+            $arr                = array_map('trim', explode('-', $text));
+            $text               = $arr[0];
+            $this->messageQuery = $arr[1] ?? null;
+        }
+
+        return $text;
+
     }
 
 

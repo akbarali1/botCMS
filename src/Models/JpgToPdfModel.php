@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class JpgToPdfModel extends BaseModel
 {
-    protected $table    = 'jpgtopdf';
+    protected $table    = 'jpg_to_pdf_files';
     protected $fillable = [
         'id',
         'user_id',

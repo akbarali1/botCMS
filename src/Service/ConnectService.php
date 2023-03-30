@@ -47,6 +47,7 @@ class ConnectService extends CoreService
             '/iWillSendTheFiles' => $this->iWillSendTheFiles(),
             'photo'              => $this->photoSave(),
             '/stopSendMeTheFile' => $this->stopSendMeTheFile(),
+            '/group'             => $this->groupMessageAdmin(),
             default              => $this->default()
         };
 
@@ -55,7 +56,7 @@ class ConnectService extends CoreService
 
     private function default(): array
     {
-        return $this->sendMessage($this->getChatId(), 'Please send me a photo');
+        return $this->sendMessage($this->getChatId(), 'I don\'t understand you.'."\n\nBot start command /start");
     }
 
     private function start(): array
@@ -146,7 +147,13 @@ class ConnectService extends CoreService
     public function stopSendMeTheFile(): array
     {
         $user     = $this->getUser();
-        $fileLink = $user->jpgToPdfNoActive->pluck('link')->toArray();
+        $today    = date('Y-m-d');
+        $fileLink = JpgToPdfModel::query()
+            ->where('user_id', '=', $user->id)
+            ->whereBetween('created_at', [$today.' 00:00:00', $today.' 23:59:59'])
+            ->where('status', '=', 0)
+            ->latest()->pluck('link')->toArray();
+
         if (count($fileLink) === 0) {
             return $this->sendMessage($this->getChatId(), lang("noFileSend"), reply_to_message_id: $this->getMessageId());
         }
@@ -179,12 +186,13 @@ class ConnectService extends CoreService
         if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
             throw new \RuntimeException("PDFni yuklash uchun serverda papka yaratib bo'lmadi");
         }
-        $fileName = $path.$telegramId.'.pdf';
+        $name     = hash('sha256', time().$telegramId);
+        $fileName = $path.$name.'.pdf';
         $imagick->writeImages($fileName, true);
 
         return [
             'path' => $fileName,
-            'link' => 'https://bot.uzhackersw.uz/storage/pdf/'.$telegramId.'.pdf',
+            'link' => 'https://bot.uzhackersw.uz/storage/pdf/'.$name.'.pdf',
         ];
     }
 
@@ -248,6 +256,17 @@ class ConnectService extends CoreService
         }
 
         return false;
+    }
+
+    private function groupMessageAdmin()
+    {
+        if ($this->messageQuery === '') {
+            return $this->sendMessage($this->getChatId(), "Xabar yozilmagan");
+        }
+
+        $this->sendMessage($this->requiredChannels[1]['id'], $this->messageQuery);
+
+        return $this->sendMessage($this->getChatId(), "Habar yuborildi");
     }
 
 }
