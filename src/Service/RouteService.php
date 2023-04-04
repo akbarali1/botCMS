@@ -26,14 +26,17 @@ class RouteService
         ];
     }
 
+    /**
+     * @throws \JsonException
+     */
     public function jpgToPdf(): array
     {
-        return (new ConnectService())->connect();
+        return (new JpgToPdfService(config('telegram')['botToken']['jpgtopdfrobot']))->connect();
     }
 
     public function jpgToPdfTest()
     {
-        ConnectService::test();
+        JpgToPdfService::test();
     }
 
     #[NoReturn] public function storage(): void
@@ -54,6 +57,14 @@ class RouteService
         flush(); // Flush system output buffer
         readfile($file);
         exit;
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function removeBgRobot(): array
+    {
+        return (new RemoveBgService(config('telegram')['botToken']['removebg_robot']))->connect();
     }
 
 }

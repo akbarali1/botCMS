@@ -25,22 +25,24 @@ class CoreService
     public array    $adminIds         = [];
     public          $user             = [];
     public string   $messageQuery     = '';
+    public          $file_id          = '';
 
     /**
      * @throws \JsonException
      */
-    public function __construct()
+    public function __construct(string $botToken = null)
     {
-        $this->api_key          = config('telegram')['botToken'];
+        $this->api_key          = $botToken;
         $this->adminGroupId     = config('telegram')['adminGroupId'];
         $this->adminIds         = config('telegram')['adminIds'];
         $this->requiredChannels = config('telegram')['requiredChannels'];
         $data                   = file_get_contents('php://input');
+        $this->file_id          = '';
         $this->messageQuery     = '';
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
-        info(json_encode($this->request));
+        //        info(json_encode($this->request));
         /*  if (!isset($this->request['message']['chat']['id'])) {
               dd('Error: Chat ID not found');
           }*/
@@ -49,11 +51,11 @@ class CoreService
     /**
      * @throws \JsonException
      */
-    public function sendTelegram($array, $method = 'sendMessage'): array
+    public function sendTelegram($query, $method = 'sendMessage'): array
     {
         $ch = curl_init('https://api.telegram.org/bot'.$this->api_key.'/'.$method);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $array);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
         $res = curl_exec($ch);
@@ -62,6 +64,8 @@ class CoreService
         $array = (array)json_decode($res, true, 512, JSON_THROW_ON_ERROR);
         if ($array['ok'] === false) {
             info($array['description']);
+            info($method);
+            info(json_encode($query));
         }
 
         return $array;
@@ -198,10 +202,18 @@ class CoreService
     {
         $request = $this->request;
 
-        $photo = isset($request['message']['photo']) ? 'photo' : false;
-        if ($photo) {
-            return $photo;
+        if (isset($request['message']['photo'])) {
+            $this->file_id = array_pop($this->request['message']['photo'])['file_id'];
+
+            return 'photo';
         }
+
+        if (isset($request['message']['document']['mime_type']) && in_array($request['message']['document']['mime_type'], ["image/jpeg", "image/png"])) {
+            $this->file_id = $request['message']['document']['file_id'];
+
+            return "photo";
+        }
+
         $text = $request['message']['text'] ?? null;
 
         //check admin

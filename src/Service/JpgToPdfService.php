@@ -16,7 +16,7 @@ use App\Models\UserModel;
  * Telegram: @akbar_aka
  * E-mail: me@akbarali.uz
  */
-class ConnectService extends CoreService
+class JpgToPdfService extends CoreService
 {
     public function connect(): array
     {
@@ -42,7 +42,7 @@ class ConnectService extends CoreService
             return $this->sendMessage($this->getChatId(), $message);
         }
 
-        $res = match ($this->getMessage()) {
+        return match ($this->getMessage()) {
             '/start'             => $this->start(),
             '/iWillSendTheFiles' => $this->iWillSendTheFiles(),
             'photo'              => $this->photoSave(),
@@ -50,8 +50,6 @@ class ConnectService extends CoreService
             '/group'             => $this->groupMessageAdmin(),
             default              => $this->default()
         };
-
-        return $res;
     }
 
     private function default(): array
@@ -88,8 +86,7 @@ class ConnectService extends CoreService
             return $this->sendMessage($this->getChatId(), lang("photoSaveError"), reply_to_message_id: $this->getMessageId());
         }
 
-        $photo = array_pop($this->request['message']['photo']);
-        $res   = $this->sendTelegram(['file_id' => $photo['file_id']], 'getFile');
+        $res = $this->sendTelegram(['file_id' => $this->file_id], 'getFile');
         if ($res['ok'] === true) {
             $user = $this->getUser();
             $link = 'https://api.telegram.org/file/bot'.$this->api_key.'/'.$res['result']['file_path'];
@@ -186,13 +183,13 @@ class ConnectService extends CoreService
         if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
             throw new \RuntimeException("PDFni yuklash uchun serverda papka yaratib bo'lmadi");
         }
-        $name     = hash('sha256', time().$telegramId);
-        $fileName = $path.$name.'.pdf';
+        $name     = hash('sha256', time().$telegramId).'.pdf';
+        $fileName = $path.$name;
         $imagick->writeImages($fileName, true);
 
         return [
             'path' => $fileName,
-            'link' => 'https://bot.uzhackersw.uz/storage/pdf/'.$name.'.pdf',
+            'link' => 'https://bot.uzhackersw.uz/storage/pdf/'.$name,
         ];
     }
 

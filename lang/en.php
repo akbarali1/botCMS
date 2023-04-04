@@ -1,6 +1,6 @@
 <?php
 return [
-    'start'                  => 'Hi %s. I will make a PDF of the JPG image. Give the /iWillSendTheFiles command. To make a JPG PDF, drop me a picture as a photo (not in file format)!',
+    'start'                  => 'Hi %s. I will make a PDF of the JPG image. Give the /iWillSendTheFiles command. To make a JPG PDF, drop me a picture as a photo.!',
     'iWillSendTheFiles'      => "Send me your pictures and I will keep them in my memory. Send me the /stopSendMeTheFile command when you're done uploading all your photos",
     'toRememberError'        => 'There is no connection with the database. Contact the admin',
     "photoSave"              => "I remembered your picture. When you\'re done shooting, give me the /stopSendMeTheFile command. If you have not finished, continue painting",
