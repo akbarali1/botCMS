@@ -14,16 +14,21 @@ return [
         'strict'    => true,
     ],
     'telegram' => [
-        'botToken'         => 'botToken',
-        'adminIds'         => [],
-        'requiredChannels' => [
-            ['id' => 0, 'name' => 'channel or group name'],
+        'botToken'         => [
+            "bot_username" => "BOT_TOKEN",
         ],
-        'adminGroupId'     => 'adminGroupId',
+        'adminIds'         => [0000, 1111],
+        'requiredChannels' => [
+            ['id' => '@channelUsername', 'name' => 'Channel Name'],
+        ],
+        'adminGroupId'     => 'PrivateGroupId',
+        'secretKey'        => [
+            "removebg_robot" => 'SecretKey',
+        ],
         'features'         => [
             'convert' => true,
             'delete'  => true,
         ],
-        'debug'            => true,
+        'debug'            => false,
     ],
 ];
