@@ -52,9 +52,10 @@ class UserModel extends BaseModel
     ];
 
     protected $casts = [
-        'condition'  => 'integer', // 0 - not send, 1 - send
-        'is_ban'     => 'boolean', // 0 - not ban, 1 - ban, default 0
-        'is_premium' => 'boolean', // 0 - not premium, 1 - premium, default 0
+        'telegram_id' => 'integer',
+        'condition'   => 'integer', // 0 - not send, 1 - send
+        'is_ban'      => 'boolean', // 0 - not ban, 1 - ban, default 0
+        'is_premium'  => 'boolean', // 0 - not premium, 1 - premium, default 0
     ];
 
     public function jpgToPdf()

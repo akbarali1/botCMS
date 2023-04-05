@@ -42,6 +42,7 @@ class CoreService
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
+        info($this->request, isArray: true);
         //        info(json_encode($this->request));
         /*  if (!isset($this->request['message']['chat']['id'])) {
               dd('Error: Chat ID not found');
@@ -65,7 +66,7 @@ class CoreService
         if ($array['ok'] === false) {
             info($array['description']);
             info($method);
-            info(json_encode($query));
+            info('query: '.json_encode($query));
         }
 
         return $array;
@@ -96,8 +97,10 @@ class CoreService
         }
     }
 
-    public function sendMessage($chat_id, $text, $parse_mode = 'HTML', $disable_notification = false, $reply_to_message_id = null, $reply_markup = null): array
+    public function sendMessage($chat_id = 0, $text, $parse_mode = 'HTML', $disable_notification = false, $reply_to_message_id = null, $reply_markup = null): array
     {
+        $chat_id = ($chat_id === 0) ? $this->getChatId() : $chat_id;
+
         if (is_array($chat_id) && count($chat_id) > 0) {
             $res = [];
             foreach ($chat_id as $item) {
@@ -158,6 +161,8 @@ class CoreService
 
     public function sendChatAction(int $chat_id = 0, string $action = 'typing'): array
     {
+        $chat_id = ($chat_id === 0) ? $this->getChatId() : $chat_id;
+
         return $this->sendTelegram(
             [
                 'chat_id' => $chat_id === 0 ? $this->getChatId() : $chat_id,
@@ -291,9 +296,9 @@ class CoreService
      */
     public function restrictChatMember(int $chat_id, int $userId, int $until_date, $can_send_messages = true): array
     {
-        info('restrictChatMember');
-        info($chat_id);
-        info($userId);
+        //        info('restrictChatMember');
+        //        info($chat_id);
+        //        info($userId);
 
         return $this->sendTelegram(
             [
@@ -311,6 +316,11 @@ class CoreService
     public function isPrivateChat(): bool
     {
         return $this->getChatType() === 'private';
+    }
+
+    public function isGroup(): bool
+    {
+        return isset($this->request['message']['chat']['type']) && $this->request['message']['chat']['type'] === 'supergroup';
     }
 
 

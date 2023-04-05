@@ -20,6 +20,10 @@ class JpgToPdfService extends CoreService
 {
     public function connect(): array
     {
+        if ($this->isGroup()) {
+            $this->checkUserIsBanned();
+        }
+
         $user = $this->getUser();
         if ($user->is_ban) {
             return $this->sendMessage($this->getChatId(), lang("banned"));
@@ -48,6 +52,7 @@ class JpgToPdfService extends CoreService
             'photo'              => $this->photoSave(),
             '/stopSendMeTheFile' => $this->stopSendMeTheFile(),
             '/group'             => $this->groupMessageAdmin(),
+            '/check'             => $this->checkAndBanned(),
             default              => $this->default()
         };
     }
@@ -264,6 +269,63 @@ class JpgToPdfService extends CoreService
         $this->sendMessage($this->requiredChannels[1]['id'], $this->messageQuery);
 
         return $this->sendMessage($this->getChatId(), "Habar yuborildi");
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    private function checkAndBanned()
+    {
+        if ($this->messageQuery === '') {
+            return $this->sendMessage($this->getChatId(), "Tekshirish kodi kiritilmagan");
+        }
+        $this->sendMessage($this->getChatId(), "Men Userlarni tekshirishni boshladim");
+
+
+        $count   = UserModel::query()->where('is_ban', '!=', 1)->count();
+        $message = "Tekshirish kodi: ".$this->messageQuery;
+        $message .= "\nJami userlar: ".$count;
+
+        $checks = UserModel::query()
+            ->where('is_ban', '=', 0)
+            ->where('condition', '!=', $this->messageQuery)
+            ->where('bot', '=', 'jpgtopdfrobot')->limit(200)->get();
+
+        $chanel_name = config('telegram')['requiredChannels'][0]['id'];
+        $i           = 0;
+        $this->sendChatAction();
+        foreach ($checks as $item) {
+            //$this->sendMessage($this->getChatId(), $item->telegram_id);
+            $chanel = $this->sendTelegram(['chat_id' => $chanel_name, 'user_id' => $item->telegram_id], 'getChatMember');
+            info($chanel, isArray: true);
+            if ($chanel['result']['status'] === 'left' || $chanel['error_code'] === 400) {
+                $item->update(['is_ban' => true]);
+                ++$i;
+                continue;
+            }
+            $item->update(['condition' => $this->messageQuery]);
+        }
+
+        $message .= "\nTekshirildi: 200 dona";
+        $message .= "\nBanlandi: {$i} dona";
+
+        return $this->sendMessage($this->getChatId(), $message);
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    private function checkUserIsBanned()
+    {
+        $chatId = $this->request['message']['chat']['id'];
+        $user   = $this->getUser();
+        if ($user->is_ban) {
+            $this->restrictChatMember($chatId, $this->getChatId(), 60 * 60 * 24 * 365, false);
+            self::deleteMessage($chatId, $this->getMessageId());
+
+            $this->sendMessage($this->getChatId(), lang("youAreBannedAndLeft"));
+        }
+
     }
 
 }

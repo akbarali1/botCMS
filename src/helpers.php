@@ -3,9 +3,13 @@
 use App\Service\CoreService;
 
 if (!function_exists('info')) {
-    function info($message, $context = [])
+    /**
+     * @throws JsonException
+     */
+    function info($message, $context = [], $isArray = false): void
     {
-        $path = __DIR__.'/../public/storage/logs/';
+        $message = (is_array($message) && $isArray) ? json_encode($message, JSON_THROW_ON_ERROR) : $message;
+        $path    = __DIR__.'/../public/storage/logs/';
         if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
         }
