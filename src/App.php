@@ -35,9 +35,9 @@ class App
      */
     #[NoReturn] public function run(): void
     {
-        if (pathinfo($_SERVER['REQUEST_URI'], PATHINFO_DIRNAME) === '/storage/pdf') {
-            $this->routeService->storage();
-        }
+      /*if (pathinfo($_SERVER['REQUEST_URI'], PATHINFO_DIRNAME) === '/storage/pdf') {
+           // $this->routeService->storage();
+        }*/
         $res = match (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) {
             '/jpgToPdf'      => $this->routeService->jpgToPdf(),
             '/removeBgRobot' => $this->routeService->removeBgRobot(),

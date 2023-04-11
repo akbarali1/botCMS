@@ -281,8 +281,7 @@ class JpgToPdfService extends CoreService
         }
         $this->sendMessage($this->getChatId(), "Men Userlarni tekshirishni boshladim");
 
-
-        $count   = UserModel::query()->where('is_ban', '!=', 1)->count();
+        $count   = UserModel::query()->where('is_ban', '=', 0)->count();
         $message = "Tekshirish kodi: ".$this->messageQuery;
         $message .= "\nJami userlar: ".$count;
 
@@ -291,10 +290,11 @@ class JpgToPdfService extends CoreService
             ->where('condition', '!=', $this->messageQuery)
             ->where('bot', '=', 'jpgtopdfrobot')->limit(200)->get();
 
-        $chanel_name = config('telegram')['requiredChannels'][0]['id'];
+        $chanel_name = config('telegram')['requiredChannels'][1]['id'];
         $i           = 0;
         $this->sendChatAction();
         foreach ($checks as $item) {
+            $this->sendChatAction();
             //$this->sendMessage($this->getChatId(), $item->telegram_id);
             $chanel = $this->sendTelegram(['chat_id' => $chanel_name, 'user_id' => $item->telegram_id], 'getChatMember');
             info($chanel, isArray: true);
