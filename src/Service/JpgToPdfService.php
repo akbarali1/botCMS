@@ -20,6 +20,10 @@ class JpgToPdfService extends CoreService
 {
     public function connect(): array
     {
+        if (config('telegram')['debug'] && !in_array($this->getChatId(), config('telegram')['adminIds'], true)) {
+            return $this->sendMessage($this->getChatId(), 'The bot is currently not working because the admin is adding new things to the bot. Try again later');
+        }
+
         if ($this->isGroup()) {
             $this->checkUserIsBanned();
         }
@@ -33,18 +37,15 @@ class JpgToPdfService extends CoreService
             exit();
         }
 
-        $this->sendChatAction();
-        if (config('telegram')['debug'] && !in_array($this->getChatId(), config('telegram')['adminIds'], true)) {
-            return $this->sendMessage($this->getChatId(), 'The bot is currently not working because the admin is adding new things to the bot. Try again later');
-        }
-        if ($this->checkChannelJoin()) {
-            $message = lang("channelJoinError")."\n\n";
-            foreach ($this->requiredChannels as $key => $channel) {
-                $message .= ($key + 1).") ".$channel['id']." - <a href='https://t.me/".$channel['id']."'>".$channel['name']."</a>\n";
-            }
+        // $this->sendChatAction();
+        /* if ($this->checkChannelJoin()) {
+             $message = lang("channelJoinError")."\n\n";
+             foreach ($this->requiredChannels as $key => $channel) {
+                 $message .= ($key + 1).") ".$channel['id']." - <a href='https://t.me/".$channel['id']."'>".$channel['name']."</a>\n";
+             }
 
-            return $this->sendMessage($this->getChatId(), $message);
-        }
+             return $this->sendMessage($this->getChatId(), $message);
+         }*/
 
         return match ($this->getMessage()) {
             '/start'             => $this->start(),
@@ -148,6 +149,14 @@ class JpgToPdfService extends CoreService
 
     public function stopSendMeTheFile(): array
     {
+        if ($this->checkChannelJoin()) {
+            $message = lang("channelJoinError")."\n\n";
+            foreach ($this->requiredChannels as $key => $channel) {
+                $message .= ($key + 1).") ".$channel['id']." - <a href='https://t.me/".$channel['id']."'>".$channel['name']."</a>\n";
+            }
+
+            return $this->sendMessage($this->getChatId(), $message);
+        }
         $user     = $this->getUser();
         $today    = date('Y-m-d');
         $fileLink = JpgToPdfModel::query()
@@ -161,7 +170,7 @@ class JpgToPdfService extends CoreService
         }
 
         $userMessageSend = $this->sendMessage($this->getChatId(), lang("jptToPdfConvertPending"), reply_to_message_id: $this->getMessageId());
-        $this->sendChatAction($this->adminGroupId);
+        //$this->sendChatAction($this->adminGroupId);
         $adminSendMessage = $this->sendMessage($this->adminGroupId, lang("adminGroupSend", [$this->getFullName(), $this->getUsername(), $this->getChatId()]));
 
         $fileName = $this->saveImage($fileLink, $user->telegram_id);
@@ -171,7 +180,7 @@ class JpgToPdfService extends CoreService
         $user->save();
 
         $this->sendChatAction(action: 'upload_document');
-        $this->sendChatAction($this->adminGroupId, 'upload_document');
+        // $this->sendChatAction($this->adminGroupId, 'upload_document');
         $this->sendDocument($this->adminGroupId, $fileName['link'], reply_to_message_id: $adminSendMessage['result']['message_id']);
 
         $response = $this->sendDocument($this->getChatId(), $fileName['link'], reply_to_message_id: $userMessageSend['result']['message_id']);
@@ -290,11 +299,11 @@ class JpgToPdfService extends CoreService
             ->where('condition', '!=', $this->messageQuery)
             ->where('bot', '=', 'jpgtopdfrobot')->limit(200)->get();
 
-        $chanel_name = config('telegram')['requiredChannels'][1]['id'];
-        $i           = 0;
-        $this->sendChatAction();
+        $chanel_name = config('telegram')['requiredChannels'][0]['id'];
+        //$chanel_name = config('telegram')['requiredChannels'][1]['id'];
+        $i = 0;
+        //  $this->sendChatAction();
         foreach ($checks as $item) {
-            $this->sendChatAction();
             //$this->sendMessage($this->getChatId(), $item->telegram_id);
             $chanel = $this->sendTelegram(['chat_id' => $chanel_name, 'user_id' => $item->telegram_id], 'getChatMember');
             info($chanel, isArray: true);
