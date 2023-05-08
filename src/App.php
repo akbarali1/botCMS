@@ -41,7 +41,7 @@ class App
         $res = match (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) {
             '/jpgToPdf'      => $this->routeService->jpgToPdf(),
             '/removeBgRobot' => $this->routeService->removeBgRobot(),
-            #'/jpgToPdf/test' => $this->routeService->jpgToPdfTest(),
+            '/anime' => $this->routeService->animeBot(),
             default          => $this->routeService->home(),
         };
         header('Content-Type: application/json');

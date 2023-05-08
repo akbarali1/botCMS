@@ -213,6 +213,14 @@ class CoreService
             return 'photo';
         }
 
+        if (isset($request['message']['video'])) {
+            info(999999999999999999999999999999999999999999999);
+            info($this->request, isArray: true);
+            $this->file_id = $this->request['message']['video']['file_id'];
+
+            return 'video';
+        }
+
         if (isset($request['message']['document']['mime_type']) && in_array($request['message']['document']['mime_type'], ["image/jpeg", "image/png"])) {
             $this->file_id = $request['message']['document']['file_id'];
 
@@ -296,10 +304,6 @@ class CoreService
      */
     public function restrictChatMember(int $chat_id, int $userId, int $until_date, $can_send_messages = true): array
     {
-        //        info('restrictChatMember');
-        //        info($chat_id);
-        //        info($userId);
-
         return $this->sendTelegram(
             [
                 'chat_id'         => $chat_id,
@@ -321,6 +325,24 @@ class CoreService
     public function isGroup(): bool
     {
         return isset($this->request['message']['chat']['type']) && $this->request['message']['chat']['type'] === 'supergroup';
+    }
+
+
+    public function sendVideo($chat_id, $video, $caption = null, $parse_mode = null, $disable_notification = false, $reply_to_message_id = null, $reply_markup = null): array
+    {
+        return $this->sendTelegram(
+            [
+                'chat_id'              => $chat_id,
+                'video'                => $video,
+                'caption'              => $caption,
+                'parse_mode'           => $parse_mode,
+                'disable_notification' => $disable_notification,
+                'reply_to_message_id'  => $reply_to_message_id,
+                'reply_markup'         => $reply_markup,
+                'protect_content'      => true,
+            ],
+            'sendVideo'
+        );
     }
 
 

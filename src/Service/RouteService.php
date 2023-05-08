@@ -67,4 +67,12 @@ class RouteService
         return (new RemoveBgService(config('telegram')['botToken']['removebg_robot']))->connect();
     }
 
+    /**
+     * @throws \JsonException
+     */
+    public function animeBot(): array
+    {
+        return (new AnimeBotService(config('telegram')['botToken']['anime']))->connect();
+    }
+
 }
