@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Models\JpgToPdfModel;
 use App\Models\UserModel;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Created by PhpStorm.
@@ -38,7 +39,27 @@ class AnimeBotService extends CoreService
 
     private function default(): array
     {
+
+        if (filter_var($this->getMessage(), FILTER_VALIDATE_URL)) {
+            $name = basename($this->getMessage());
+
+            return $this->sendMessage($this->getChatId(), $this->getApi($name));
+        }
+
         return $this->sendMessage($this->getChatId(), 'Nima bo`lganini tushunmadim'."\n\n Botni qayta ishga tushuring /start");
+    }
+
+    public function getApi($name)
+    {
+        $response = (new Client())->get('https://cdn.amediatv.uz/api/season/v2/'.$name);
+        $res      = json_decode($response->getBody()->getContents(), true);
+        $seria    = $res['seria'];
+        info($seria, isArray: true);
+        $coll = collect($seria)->pluck('url')->implode("\n\n");
+        info($coll);
+
+        return $coll;
+
     }
 
     private function start(): array
@@ -50,10 +71,10 @@ class AnimeBotService extends CoreService
     {
         $caption = explode("\n", $this->request['message']['caption'] ?? 'Yo`q')[0];
         $caption .= "\n\n\n"."Kanal: @amedia_free";
-       /* info(11111111111111111111111111111111111);
-        info($this->request, isArray: true);
-        info("File ID");
-        info($this->file_id);*/
+        /* info(11111111111111111111111111111111111);
+         info($this->request, isArray: true);
+         info("File ID");
+         info($this->file_id);*/
 
         $this->sendVideo('@amedia_free', $this->file_id, $caption);
 
