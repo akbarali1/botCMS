@@ -159,11 +159,11 @@ class JpgToPdfService extends CoreService
         }
         $user     = $this->getUser();
         $today    = date('Y-m-d');
-        $fileLink = JpgToPdfModel::query()
-            ->where('user_id', '=', $user->id)
+        $fileLink = JpgToPdfModel::query()->where('user_id', '=', $user->id)
             ->whereBetween('created_at', [$today.' 00:00:00', $today.' 23:59:59'])
             ->where('status', '=', 0)
-            ->latest()->pluck('link')->toArray();
+            //->orderBy('id')
+            ->pluck('link')->toArray();
 
         if (count($fileLink) === 0) {
             return $this->sendMessage($this->getChatId(), lang("noFileSend"), reply_to_message_id: $this->getMessageId());
