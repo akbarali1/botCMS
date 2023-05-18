@@ -42,7 +42,7 @@ class CoreService
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
-        info($this->request, isArray: true);
+        //        info($this->request, isArray: true);
         //        info(json_encode($this->request));
         /*  if (!isset($this->request['message']['chat']['id'])) {
               dd('Error: Chat ID not found');
@@ -214,8 +214,8 @@ class CoreService
         }
 
         if (isset($request['message']['video'])) {
-            info(999999999999999999999999999999999999999999999);
-            info($this->request, isArray: true);
+            //            info(999999999999999999999999999999999999999999999);
+            //            info($this->request, isArray: true);
             $this->file_id = $this->request['message']['video']['file_id'];
 
             return 'video';

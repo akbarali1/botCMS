@@ -53,12 +53,25 @@ class AnimeBotService extends CoreService
     {
         $response = (new Client())->get('https://cdn.amediatv.uz/api/season/v2/'.$name);
         $res      = json_decode($response->getBody()->getContents(), true);
-        $seria    = $res['seria'];
-        info($seria, isArray: true);
-        $coll = collect($seria)->pluck('url')->implode("\n\n");
-        info($coll);
+        $coll     = collect($res['seria'])->sortBy('createdAt');
 
-        return $coll;
+        $message = '';
+
+        $i = 0;
+        foreach ($coll as $row) {
+            ++$i;
+            $message .= "Nomi: ".$row['name']['uz']."\n";
+            $message .= "Url: <a href='".$row['url']."'>YUKLASH</a>\n\n";
+            if ($i === 30) {
+                $this->sendMessage($this->getChatId(), $message);
+                $i       = 0;
+                $message = '';
+            }
+        }
+
+        return $message;
+        //        info($coll);
+        //        return $coll;
 
     }
 
