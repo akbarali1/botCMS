@@ -49,14 +49,12 @@ class AnimeBotService extends CoreService
         return $this->sendMessage($this->getChatId(), 'Nima bo`lganini tushunmadim'."\n\n Botni qayta ishga tushuring /start");
     }
 
-    public function getApi($name)
+    public function getApi($name): string
     {
         $response = (new Client())->get('https://cdn.amediatv.uz/api/season/v2/'.$name);
         $res      = json_decode($response->getBody()->getContents(), true);
         $coll     = collect($res['seria'])->sortBy('createdAt');
-
         $message = '';
-
         $i = 0;
         foreach ($coll as $row) {
             ++$i;
