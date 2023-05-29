@@ -30,6 +30,14 @@ class JpgToPdfService extends CoreService
 
         $user = $this->getUser();
         if ($user->is_ban) {
+            if ($this->checkChannelJoin()) {
+                $message = lang("channelJoinError")."\n\n";
+                foreach ($this->requiredChannels as $key => $channel) {
+                    $message .= ($key + 1).") ".$channel['id']." - <a href='https://t.me/".$channel['id']."'>".$channel['name']."</a>\n";
+                }
+
+                return $this->sendMessage($this->getChatId(), $message);
+            }
             return $this->sendMessage($this->getChatId(), lang("banned"));
         }
 
@@ -230,7 +238,6 @@ class JpgToPdfService extends CoreService
     private function removeJoinChannel(): false|array
     {
         $request = $this->request;
-        //        info(json_encode($request, JSON_THROW_ON_ERROR));
         $fromId = $this->getChatId();
         $chatId = $request['message']['chat']['id'];
         if (!$fromId) {
@@ -269,7 +276,7 @@ class JpgToPdfService extends CoreService
         return false;
     }
 
-    private function groupMessageAdmin()
+    private function groupMessageAdmin(): array
     {
         if ($this->messageQuery === '') {
             return $this->sendMessage($this->getChatId(), "Xabar yozilmagan");
