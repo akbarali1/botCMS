@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Models\ConvertJpgTransActionModel;
 use App\Models\JpgToPdfModel;
 use App\Models\UserModel;
 
@@ -94,7 +95,11 @@ class JpgToPdfService extends CoreService
     {
         $user = $this->getUser();
         if ($user->condition === 0) {
-            $user->condition = 1;
+            $transAction      = ConvertJpgTransActionModel::query()->create([
+                'user_id' => $user->id,
+            ]);
+            $user->condition  = 1;
+            $user->convert_id = $transAction->id;
             $user->save();
 
             return $this->sendMessage($this->getChatId(), lang("iWillSendTheFiles"));
@@ -110,10 +115,17 @@ class JpgToPdfService extends CoreService
     private function photoSave(): array
     {
         $user = $this->getUser();
+
         if ($user->condition === 0) {
+            if (!$user->isConvertActive()) {
+                $transAction = ConvertJpgTransActionModel::query()->create([
+                    'user_id' => $user->id,
+                ]);
+
+                $user->convert_id = $transAction->id;
+            }
             $user->condition = 1;
             $user->save();
-            //return $this->sendMessage($this->getChatId(), lang("iWillSendTheFiles"));
         }
         /* if ($user->condition === 0) {
             return $this->sendMessage($this->getChatId(), lang("photoSaveError"), reply_to_message_id: $this->getMessageId());
@@ -124,15 +136,16 @@ class JpgToPdfService extends CoreService
             $user = $this->getUser();
             $link = 'https://api.telegram.org/file/bot'.$this->api_key.'/'.$res['result']['file_path'];
             JpgToPdfModel::query()->create([
-                'user_id' => $user->id,
-                'link'    => $link,
+                'user_id'        => $user->id,
+                'link'           => $link,
+                'transaction_id' => $user->transaction->id,
             ]);
             $message = lang("photoSave");
 
             if (!$user->is_premium) {
                 $limitUser = JpgToPdfModel::query()->where('user_id', '=', $user->id)
                     ->whereBetween('created_at', [$this->today.' 00:00:00', $this->today.' 23:59:59'])
-                    ->where('status', '=', 0)
+                    ->where('status', '=', JpgToPdfModel::STATUS_DEACTIVATE)
                     ->count();
                 if ($limitUser > self::LIMIT_PAGE_PDF) {
                     $message .= lang("savedImageBuyPremium");
@@ -194,7 +207,8 @@ class JpgToPdfService extends CoreService
 
         if (!$user->is_premium && count($fileLink) > self::LIMIT_PAGE_PDF) {
             JpgToPdfModel::query()->where('user_id', '=', $user->id)->update(['status' => 2]);
-            $user->condition = 0;
+            $user->condition  = 0;
+            $user->convert_id = 0;
             $user->save();
 
             $message = lang("isPremiumBuy");
@@ -210,7 +224,8 @@ class JpgToPdfService extends CoreService
         $fileName = $this->urlImageToPDFConvert($fileLink, $user->telegram_id);
 
         JpgToPdfModel::query()->where('user_id', '=', $user->id)->update(['status' => 1]);
-        $user->condition = 0;
+        $user->condition  = 0;
+        $user->convert_id = 0;
         $user->save();
 
         $this->sendChatAction(action: 'upload_document');

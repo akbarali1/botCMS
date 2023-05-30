@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -17,18 +19,21 @@ use Illuminate\Database\Query\Builder;
  *
  * @mixin Builder
  *
- * @property int    $id          - Auto increment
- * @property int    $today       - last active date
- * @property int    $limit       - user one day limit used
- * @property int    $telegram_id - user telegram id
- * @property int    $condition   - 0 = not send, 1 = send
- * @property bool   $is_ban      - 0 = not ban, 1 = ban, default  not ban
- * @property bool   $is_premium  - 0 = not premium, 1 = premium, default not premium
- * @property string $username    - Telegram username
- * @property string $time        - unix time
- * @property string $bot         - Start bot Username
- * @property string $created_at  - Table created time
- * @property string $updated_at  - Table updated time
+ * @property int                        $id          - Auto increment
+ * @property int                        $today       - last active date
+ * @property int                        $limit       - user one day limit used
+ * @property int                        $telegram_id - user telegram id
+ * @property int                        $condition   - 0 = not send, 1 = send
+ * @property int                        $convert_id
+ * @property bool                       $is_ban      - 0 = not ban, 1 = ban, default  not ban
+ * @property bool                       $is_premium  - 0 = not premium, 1 = premium, default not premium
+ * @property string                     $username    - Telegram username
+ * @property string                     $time        - unix time
+ * @property string                     $bot         - Start bot Username
+ * @property string                     $created_at  - Table created time
+ * @property string                     $updated_at  - Table updated time
+ *
+ * @property ConvertJpgTransActionModel $transaction
  */
 class UserModel extends BaseModel
 {
@@ -38,6 +43,7 @@ class UserModel extends BaseModel
         'today',
         'limit',
         'telegram_id',
+        'convert_id',
         'condition',
         'username',
         'is_ban',
@@ -58,7 +64,7 @@ class UserModel extends BaseModel
         'is_premium'  => 'boolean', // 0 - not premium, 1 - premium, default 0
     ];
 
-    public function jpgToPdf()
+    public function jpgToPdf(): HasMany
     {
         return $this->hasMany(JpgToPdfModel::class, 'user_id', 'id')->where('status', '=', 0);
     }
@@ -68,5 +74,14 @@ class UserModel extends BaseModel
         return $this->jpgToPdf()->where('status', '=', 0);
     }
 
+    public function transaction(): HasOne
+    {
+        return $this->hasOne(ConvertJpgTransActionModel::class, 'id', 'convert_id');
+    }
+
+    public function isConvertActive(): bool
+    {
+        return $this->convert_id > 0;
+    }
 
 }
