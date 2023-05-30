@@ -25,6 +25,7 @@ class CoreService
     public array    $adminIds         = [];
     public          $user             = [];
     public string   $messageQuery     = '';
+    public string   $today            = '';
     public          $file_id          = '';
 
     /**
@@ -42,6 +43,7 @@ class CoreService
         if ($data) {
             $this->request = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         }
+        $this->today = date('Y-m-d');
         //        info($this->request, isArray: true);
         //        info(json_encode($this->request));
         /*  if (!isset($this->request['message']['chat']['id'])) {
@@ -252,7 +254,7 @@ class CoreService
     {
         $array = (new self())->request;
 
-        return $array['message']['from']['language_code'] ?? 'uz';
+        return $array['message']['from']['language_code'] ?? 'en';
     }
 
     public function checkPhoto(): string|bool

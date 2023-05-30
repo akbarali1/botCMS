@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property int    $id         - Auto increment
  * @property int    $user_id    - user id related UserModel
  * @property string $link       - link to jpg file
- * @property int    $status     - 0 = not converted, 1 = converted
+ * @property int    $status     - 0 = not converted, 1 = converted, 2 = is premium required
  * @property string $created_at - Table created at
  * @property string $updated_at - Table updated at
  *

@@ -3,7 +3,7 @@ return [
     'start'                  => 'Hi %s. I will make a PDF of the JPG image. Give the /iWillSendTheFiles command. To make a JPG PDF, drop me a picture as a photo.!',
     'iWillSendTheFiles'      => "Send me your pictures and I will keep them in my memory. Send me the /stopSendMeTheFile command when you're done uploading all your photos",
     'toRememberError'        => 'There is no connection with the database. Contact the admin',
-    "photoSave"              => "I remembered your picture. When you\'re done shooting, give me the /stopSendMeTheFile command. If you have not finished, continue painting",
+    "photoSave"              => "I saved the picture. When you\'re done shooting, give me the /stopSendMeTheFile command. If you have not finished, continue painting.",
     'iWillSendTheFilesError' => 'You have already given me the /iWillSendTheFiles command. If you want to stop sending me pictures, give me the /stopSendMeTheFile command',
     "jptToPdfConvertPending" => "I started converting the pictures you sent me to pdf. It will take some time. Stand by...",
     "adminGroupSend"         => "Rasmni PDFga o`tkazishdi. Bot hozirda pullik rejimda ishlamayotganligi sababli hammaga hujjatlarini PDF qilib bermoqda. Men bir nusxasini shu yerga tashlayman.\nFull Name: %s \nUsername: @%s \nUserID: <code>%s</code> \nMen faylni generatsiya qila boshladim. \n \n#jpgtopdf",
@@ -28,4 +28,10 @@ return [
     'rasmyoq'             => 'You didn’t give me a picture. Or you didn\'t give the /boshla command before you took the picture',
     'block_money_sending' => "I blocked you forever because you joined our group and then left. If you have a lot of money, pay https://t.me/no_body01 a fine of $ 2.",
 
+    "isPremiumBuy"        => "You want to PDF many files at once. To PDF more than 25 images at the same time, you need to buy Premium. SORRY 😢",
+    'premiumBuyThanks'    => "You are on the Premium Rate. Thank you for supporting us 🙏",
+    'limitedPDFPage' => 'You can convert %s images to PDF for the Standard rate. If you want to PDF more than that, buy the Premium.',
+    'remaningLimit' => "\n\n<b>Remaining limit: %s </b>",
+    'savedImageBuyPremium' => "\n\n<b>I have saved your pictures. But I can't send it to you as a PDF. I can drop it after you buy Premium.</b>",
+    'buyPremium' => "To buy the premium version, write to our Telegram group. The price is $5 per month\nOur group: @convertor_group",
 ];
