@@ -42,6 +42,7 @@ class App
             '/jpgToPdf'      => $this->routeService->jpgToPdf(),
             '/removeBgRobot' => $this->routeService->removeBgRobot(),
             '/anime'         => $this->routeService->animeBot(),
+            '/test'         => $this->routeService->test(),
             default          => $this->routeService->home(),
         };
         header('Content-Type: application/json');

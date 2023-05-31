@@ -6,14 +6,18 @@ if (!function_exists('info')) {
     /**
      * @throws JsonException
      */
-    function info($message, $context = [], $isArray = false): void
+    function info($message, $context = [], $isArray = false, $force = false): void
     {
         $message = (is_array($message) && $isArray) ? json_encode($message, JSON_THROW_ON_ERROR) : $message;
         $path    = __DIR__.'/../public/storage/logs/';
         if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
         }
-        file_put_contents($path.date('Y-m-d').'.log', date('Y-m-d H:i:s').' '.$message.PHP_EOL, FILE_APPEND);
+        if ($force) {
+            file_put_contents($path.date('Y-m-d').'.log', date('Y-m-d H:i:s').' '.$message.PHP_EOL);
+        } else {
+            file_put_contents($path.date('Y-m-d').'.log', date('Y-m-d H:i:s').' '.$message.PHP_EOL, FILE_APPEND);
+        }
     }
 }
 

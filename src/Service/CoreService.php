@@ -216,8 +216,6 @@ class CoreService
         }
 
         if (isset($request['message']['video'])) {
-            //            info(999999999999999999999999999999999999999999999);
-            //            info($this->request, isArray: true);
             $this->file_id = $this->request['message']['video']['file_id'];
 
             return 'video';

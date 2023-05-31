@@ -37,6 +37,8 @@ return [
     'remaningLimit'        => "\n\n<b>Qolgan limit: %s </b>",
     'savedImageBuyPremium' => "\n\n<b>Men rasmlaringizni saqlab oldim. Lekin Sizga PDF qilib tashlab bera olmayman. Siz Premium sotib olganingizdan so`ng tashlab bera olaman.</b>",
 
-    'buyPremium' => "Premiumni sotib olish uchun guruhimizga sotib olishingiz haqida yozing. Narxi Bir oy uchun 33000 so'm\nBizning Guruh: @convertor_group",
+    'buyPremium'          => "Premiumni sotib olish uchun guruhimizga sotib olishingiz haqida yozing. Narxi Bir oy uchun 33000 so'm\nBizning Guruh: @convertor_group",
+    "photoLocalSaveError" => "Men o'zimga faylni saqlab ololmadim iltimos boshidan harakat qiling.",
+
 
 ];

@@ -24,7 +24,8 @@
     "ext-json":"*",
     "symfony/var-dumper":"^6.2",
     "guzzlehttp/guzzle":"^7.0",
-    "ext-imagick":"*"
+    "ext-imagick":"*",
+    "ext-fileinfo":"*"
   },
   "require-dev":{
     "roave/security-advisories":"dev-latest"

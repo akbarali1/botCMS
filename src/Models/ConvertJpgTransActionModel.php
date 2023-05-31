@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
  *
  * @property int    $id         - Auto increment
  * @property int    $user_id    - user id related UserModel
+ * @property int    $files      - Files count
  * @property string $created_at - Table created at
  * @property string $updated_at - Table updated at
  *
@@ -29,6 +30,7 @@ class ConvertJpgTransActionModel extends BaseModel
     protected $fillable = [
         'id',
         'user_id',
+        'files',
     ];
 
     protected $hidden = [

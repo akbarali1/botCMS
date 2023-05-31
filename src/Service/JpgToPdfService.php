@@ -32,7 +32,7 @@ class JpgToPdfService extends CoreService
         }
 
         $user = $this->getUser();
-        if ($user->is_ban) {
+        if ($user->is_ban && !in_array($this->getChatId(), $this->adminIds, true)) {
             if ($this->checkChannelJoin()) {
                 $message = lang("channelJoinError")."\n\n";
                 foreach ($this->requiredChannels as $key => $channel) {
@@ -79,12 +79,12 @@ class JpgToPdfService extends CoreService
     {
         $user    = $this->getUser();
         $message = lang("start", $this->getFullName());
-        $message .= "\n\n";
+        $message .= PHP_EOL.PHP_EOL;
         if ($user->is_premium) {
             $message .= "<b>".lang('premiumBuyThanks')."</b>";
         } else {
             $message .= "<b>".lang('limitedPDFPage', self::LIMIT_PAGE_PDF)."</b>";
-            $message .= "\n\n";
+            $message .= PHP_EOL.PHP_EOL;
             $message .= "<b>".lang('buyPremium')."</b>";
         }
 
@@ -132,21 +132,23 @@ class JpgToPdfService extends CoreService
         }*/
 
         $res = $this->sendTelegram(['file_id' => $this->file_id], 'getFile');
-        if ($res['ok'] === true) {
-            $user = $this->getUser();
-            $link = 'https://api.telegram.org/file/bot'.$this->api_key.'/'.$res['result']['file_path'];
+        if (isset($res['ok']) && $res['ok']) {
+            $user          = $this->getUser();
+            $link          = 'https://api.telegram.org/file/bot'.$this->api_key.'/'.$res['result']['file_path'];
+            $fileLocalLink = $this->saveImageFolder($link);
+            if (!$fileLocalLink) {
+                return $this->sendMessage($this->getChatId(), lang('photoLocalSaveError'), reply_to_message_id: $this->getMessageId());
+            }
             JpgToPdfModel::query()->create([
                 'user_id'        => $user->id,
                 'link'           => $link,
                 'transaction_id' => $user->transaction->id,
             ]);
+            $user->transaction->increment('files');
             $message = lang("photoSave");
 
             if (!$user->is_premium) {
-                $limitUser = JpgToPdfModel::query()->where('user_id', '=', $user->id)
-                    ->whereBetween('created_at', [$this->today.' 00:00:00', $this->today.' 23:59:59'])
-                    ->where('status', '=', JpgToPdfModel::STATUS_DEACTIVATE)
-                    ->count();
+                $limitUser = JpgToPdfModel::countTransAction($user);
                 if ($limitUser > self::LIMIT_PAGE_PDF) {
                     $message .= lang("savedImageBuyPremium");
                     $message .= "\n\n".lang('buyPremium');
@@ -184,6 +186,9 @@ class JpgToPdfService extends CoreService
         return $this->user;
     }
 
+    /**
+     * @throws \ImagickException
+     */
     public function stopSendMeTheFile(): array
     {
         if ($this->checkChannelJoin()) {
@@ -195,17 +200,13 @@ class JpgToPdfService extends CoreService
             return $this->sendMessage($this->getChatId(), $message);
         }
         $user     = $this->getUser();
-        $fileLink = JpgToPdfModel::query()->where('user_id', '=', $user->id)
-            ->whereBetween('created_at', [$this->today.' 00:00:00', $this->today.' 23:59:59'])
-            ->where('status', '=', 0)
-            //->orderBy('id')
-            ->pluck('link')->toArray();
+        $fileLink = JpgToPdfModel::countTransAction($user);
 
-        if (count($fileLink) === 0) {
+        if ($fileLink === 0) {
             return $this->sendMessage($this->getChatId(), lang("noFileSend"), reply_to_message_id: $this->getMessageId());
         }
 
-        if (!$user->is_premium && count($fileLink) > self::LIMIT_PAGE_PDF) {
+        if (!$user->is_premium && $fileLink > self::LIMIT_PAGE_PDF) {
             JpgToPdfModel::query()->where('user_id', '=', $user->id)->update(['status' => 2]);
             $user->condition  = 0;
             $user->convert_id = 0;
@@ -221,7 +222,7 @@ class JpgToPdfService extends CoreService
         //$this->sendChatAction($this->adminGroupId);
         $adminSendMessage = $this->sendMessage($this->adminGroupId, lang("adminGroupSend", [$this->getFullName(), $this->getUsername(), $this->getChatId()]));
 
-        $fileName = $this->urlImageToPDFConvert($fileLink, $user->telegram_id);
+        $pdfInfo = $this->urlImageToPDFConvert($fileLink, $user->telegram_id);
 
         JpgToPdfModel::query()->where('user_id', '=', $user->id)->update(['status' => 1]);
         $user->condition  = 0;
@@ -230,15 +231,49 @@ class JpgToPdfService extends CoreService
 
         $this->sendChatAction(action: 'upload_document');
         // $this->sendChatAction($this->adminGroupId, 'upload_document');
-        $this->sendDocument($this->adminGroupId, $fileName['link'], reply_to_message_id: $adminSendMessage['result']['message_id']);
+        $this->sendDocument($this->adminGroupId, $pdfInfo['link'], reply_to_message_id: $adminSendMessage['result']['message_id']);
 
-        $response = $this->sendDocument($this->getChatId(), $fileName['link'], reply_to_message_id: $userMessageSend['result']['message_id']);
-        unlink($fileName['path']);
+        $response = $this->sendDocument($this->getChatId(), $pdfInfo['link'], reply_to_message_id: $userMessageSend['result']['message_id']);
+        unlink($pdfInfo['path']);
 
         return $response;
     }
 
-    public function urlImageToPDFConvert(array $images, int $telegramId): array
+    /**
+     * @throws \ImagickException
+     */
+    public function urlImageToPDFConvert(): array
+    {
+        $user       = $this->getUser();
+        $telegramId = $user->telegram_id;
+        $convertId  = $user->convert_id;
+
+        $path = PUBLIC_PATH.'/storage/images/'.$telegramId.DIRECTORY_SEPARATOR.$convertId;
+
+        $images = [];
+        foreach (glob($path.DIRECTORY_SEPARATOR."*") as $file) { // iterate files
+            if (is_file($file) && mime_content_type($file) === 'image/jpeg') {
+                $images[] = $file;
+            }
+        }
+
+        $imagick = new \Imagick($images);
+        $imagick->setImageFormat('pdf');
+        $path = PUBLIC_PATH.'/storage/pdf/';
+        if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
+            throw new \RuntimeException("PDFni yuklash uchun serverda papka yaratib bo'lmadi");
+        }
+        $name     = hash('sha256', time().$telegramId).'.pdf';
+        $fileName = $path.$name;
+        $imagick->writeImages($fileName, true);
+
+        return [
+            'path' => $fileName,
+            'link' => 'https://bot.uzhackersw.uz/storage/pdf/'.$name,
+        ];
+    }
+
+    public function oldurlImageToPDFConvert(array $images, int $telegramId): array
     {
         $imagick = new \Imagick($images);
         $imagick->setImageFormat('pdf');
@@ -256,15 +291,19 @@ class JpgToPdfService extends CoreService
         ];
     }
 
-    public function saveImageFolder(string $images, int $telegramId, int $convertId): bool
+
+    public function saveImageFolder(string $image): bool
     {
-        $path = PUBLIC_PATH.'/storage/images/'.$telegramId.DIRECTORY_SEPARATOR.$convertId;
+        $user       = $this->getUser();
+        $telegramId = $user->telegram_id;
+        $convertId  = $user->convert_id;
+        $path       = PUBLIC_PATH.'/storage/images/'.$telegramId.DIRECTORY_SEPARATOR.$convertId;
 
         if (!file_exists($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
             throw new \RuntimeException("PDFni yuklash uchun serverda papka yaratib bo'lmadi");
         }
 
-        return copy($images, $path);
+        return copy($image, $path.DIRECTORY_SEPARATOR.($user->transaction->files + 1).".".pathinfo($image, PATHINFO_EXTENSION));
     }
 
 

@@ -34,4 +34,6 @@ return [
     'remaningLimit' => "\n\n<b>Remaining limit: %s </b>",
     'savedImageBuyPremium' => "\n\n<b>I have saved your pictures. But I can't send it to you as a PDF. I can drop it after you buy Premium.</b>",
     'buyPremium' => "To buy the premium version, write to our Telegram group. The price is $5 per month\nOur group: @convertor_group",
+
+    "photoLocalSaveError" => "I could not save the file to myself please try again."
 ];

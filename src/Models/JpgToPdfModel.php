@@ -43,4 +43,13 @@ class JpgToPdfModel extends BaseModel
         'updated_at',
     ];
 
+    public static function countTransAction(UserModel $user): int
+    {
+        return self::query()->where('user_id', '=', $user->id)
+            # ->whereBetween('created_at', [$this->today.' 00:00:00', $this->today.' 23:59:59'])
+            ->where('transaction_id', $user->convert_id)
+            ->where('status', '=', self::STATUS_DEACTIVATE)
+            ->count();
+    }
+
 }
