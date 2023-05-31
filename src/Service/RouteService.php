@@ -78,7 +78,7 @@ class RouteService
     public function test()
     {
         $array = [];
-        $files = glob('/var/www/bot.uzhackersw.uz/public/storage/images/414229140/11/*'); // get all file names
+        $files = glob('/var/www/bot.uzhackersw.uz/public/storage/images/414229140/15/*'); // get all file names
         foreach ($files as $file) { // iterate files
             if (is_file($file) && mime_content_type($file) === 'image/jpeg') {
                 $array[] = $file;

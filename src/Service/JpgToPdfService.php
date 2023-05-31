@@ -66,6 +66,7 @@ class JpgToPdfService extends CoreService
             '/stopSendMeTheFile' => $this->stopSendMeTheFile(),
             '/group'             => $this->groupMessageAdmin(),
             '/check'             => $this->checkAndBanned(),
+            '/file'              => $this->file(),
             default              => $this->default()
         };
     }
@@ -145,16 +146,18 @@ class JpgToPdfService extends CoreService
                 'transaction_id' => $user->transaction->id,
             ]);
             $user->transaction->increment('files');
-            $message = lang("photoSave");
+            $message   = lang("photoSave");
+            $limitUser = JpgToPdfModel::countTransAction($user);
 
             if (!$user->is_premium) {
-                $limitUser = JpgToPdfModel::countTransAction($user);
                 if ($limitUser > self::LIMIT_PAGE_PDF) {
                     $message .= lang("savedImageBuyPremium");
                     $message .= "\n\n".lang('buyPremium');
                 } else {
                     $message .= lang("remaningLimit", self::LIMIT_PAGE_PDF - $limitUser);
                 }
+            } else {
+                $message .= lang("total", $limitUser);
             }
 
             return $this->sendMessage($this->getChatId(), $message, reply_to_message_id: $this->getMessageId());
@@ -221,20 +224,17 @@ class JpgToPdfService extends CoreService
         $userMessageSend = $this->sendMessage($this->getChatId(), lang("jptToPdfConvertPending"), reply_to_message_id: $this->getMessageId());
         //$this->sendChatAction($this->adminGroupId);
         $adminSendMessage = $this->sendMessage($this->adminGroupId, lang("adminGroupSend", [$this->getFullName(), $this->getUsername(), $this->getChatId()]));
-
-        $pdfInfo = $this->urlImageToPDFConvert($fileLink, $user->telegram_id);
+        $pdfInfo          = $this->urlImageToPDFConvert($fileLink, $user->telegram_id);
+        $this->sendChatAction(action: 'upload_document');
+        // $this->sendChatAction($this->adminGroupId, 'upload_document');
+        $this->sendDocument($this->adminGroupId, $pdfInfo['link'], reply_to_message_id: $adminSendMessage['result']['message_id']);
+        $response = $this->sendDocument($this->getChatId(), $pdfInfo['link'], reply_to_message_id: $userMessageSend['result']['message_id']);
 
         JpgToPdfModel::query()->where('user_id', '=', $user->id)->update(['status' => 1]);
         $user->condition  = 0;
         $user->convert_id = 0;
         $user->save();
-
-        $this->sendChatAction(action: 'upload_document');
-        // $this->sendChatAction($this->adminGroupId, 'upload_document');
-        $this->sendDocument($this->adminGroupId, $pdfInfo['link'], reply_to_message_id: $adminSendMessage['result']['message_id']);
-
-        $response = $this->sendDocument($this->getChatId(), $pdfInfo['link'], reply_to_message_id: $userMessageSend['result']['message_id']);
-        unlink($pdfInfo['path']);
+        # unlink($pdfInfo['path']);
 
         return $response;
     }
@@ -434,6 +434,11 @@ class JpgToPdfService extends CoreService
             $this->sendMessage($this->getChatId(), lang("youAreBannedAndLeft"));
         }
 
+    }
+
+    private function file(): array
+    {
+        return $this->sendDocument($this->getChatId(), 'https://bot.uzhackersw.uz/storage/pdf/f9788b8783c7598514a899849b3a4a534a6d82ad8215bc655ac070212aa76f27.pdf');
     }
 
 }

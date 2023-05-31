@@ -28,12 +28,13 @@ return [
     'rasmyoq'             => 'You didn’t give me a picture. Or you didn\'t give the /boshla command before you took the picture',
     'block_money_sending' => "I blocked you forever because you joined our group and then left. If you have a lot of money, pay https://t.me/no_body01 a fine of $ 2.",
 
-    "isPremiumBuy"        => "You want to PDF many files at once. To PDF more than 25 images at the same time, you need to buy Premium. SORRY 😢",
-    'premiumBuyThanks'    => "You are on the Premium Rate. Thank you for supporting us 🙏",
-    'limitedPDFPage' => 'You can convert %s images to PDF for the Standard rate. If you want to PDF more than that, buy the Premium.',
-    'remaningLimit' => "\n\n<b>Remaining limit: %s </b>",
+    "isPremiumBuy"         => "You want to PDF many files at once. To PDF more than 25 images at the same time, you need to buy Premium. SORRY 😢",
+    'premiumBuyThanks'     => "You are on the Premium Rate. Thank you for supporting us 🙏",
+    'limitedPDFPage'       => 'You can convert %s images to PDF for the Standard rate. If you want to PDF more than that, buy the Premium.',
+    'remaningLimit'        => "\n\n<b>Remaining limit: %s </b>",
     'savedImageBuyPremium' => "\n\n<b>I have saved your pictures. But I can't send it to you as a PDF. I can drop it after you buy Premium.</b>",
-    'buyPremium' => "To buy the premium version, write to our Telegram group. The price is $5 per month\nOur group: @convertor_group",
+    'buyPremium'           => "To buy the premium version, write to our Telegram group. The price is $5 per month\nOur group: @convertor_group",
 
-    "photoLocalSaveError" => "I could not save the file to myself please try again."
+    "photoLocalSaveError" => "I could not save the file to myself please try again.",
+    "total"               => "\n\n<b>Total: %s</b>",
 ];
